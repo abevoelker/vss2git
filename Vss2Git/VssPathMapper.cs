@@ -547,10 +547,9 @@ namespace Hpdi.Vss2Git
                         subprojectInfo.Parent = parentInfo;
                     }
                 }
-                else
+                else if (IsInMappedSet(newParentSpec))
                 {
                     // if resolution fails, the target project has been destroyed
-                    // or is outside the set of projects being mapped
                     subprojectInfo.Destroyed = true;
                 }
             }
@@ -583,6 +582,24 @@ namespace Hpdi.Vss2Git
                 fileInfos[name.PhysicalName] = fileInfo;
             }
             return fileInfo;
+        }
+
+        private bool IsInMappedSet(string projectSpec)
+        {
+            if (!projectSpec.StartsWith("$/"))
+            {
+                throw new ArgumentException("Project spec must start with $/", "projectSpec");
+            }
+            
+            foreach (var rootInfo in rootInfos.Values)
+            {
+                if (projectSpec.StartsWith(rootInfo.OriginalVssPath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private VssProjectInfo ResolveProjectSpec(string projectSpec)
