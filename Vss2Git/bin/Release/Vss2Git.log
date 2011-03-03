@@ -1,0 +1,28 @@
+VSS2Git version 1.0.10.0
+VSS encoding: Unicode (UTF-8) (CP: 65001, IANA: utf-8)
+Comment transcoding: enabled
+------------------------------------------------------------
+Building revision list
+Root project: $
+Excluded files: 
+------------------------------------------------------------
+Building changesets
+------------------------------------------------------------
+Found 0 changesets in 00:00:00
+------------------------------------------------------------
+Initializing Git repository
+ERROR: Could not find a part of the path "/home/abe/VSS/data/A/AAAAAAAA".
+System.IO.DirectoryNotFoundException: Could not find a part of the path "/home/abe/VSS/data/A/AAAAAAAA".
+  at System.IO.FileStream..ctor (System.String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, Boolean anonymous, FileOptions options) [0x00000] in <filename unknown>:0 
+  at System.IO.FileStream..ctor (System.String path, FileMode mode, FileAccess access, FileShare share) [0x00000] in <filename unknown>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream:.ctor (string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare)
+  at Hpdi.VssPhysicalLib.VssRecordFile.ReadFile (System.String filename) [0x00000] in <filename unknown>:0 
+  at Hpdi.VssPhysicalLib.VssRecordFile..ctor (System.String filename, System.Text.Encoding encoding) [0x00000] in <filename unknown>:0 
+  at Hpdi.VssPhysicalLib.ItemFile..ctor (System.String filename, System.Text.Encoding encoding) [0x00000] in <filename unknown>:0 
+  at Hpdi.VssLogicalLib.VssItem.get_ItemFile () [0x00000] in <filename unknown>:0 
+  at Hpdi.VssLogicalLib.VssItem+VssRevisionEnumerator`2[Hpdi.VssLogicalLib.VssItem,Hpdi.VssLogicalLib.VssRevision].MoveNext () [0x00000] in <filename unknown>:0 
+  at Hpdi.Vss2Git.RevisionAnalyzer.ProcessItem (Hpdi.VssLogicalLib.VssItem item, System.String path, Hpdi.Vss2Git.PathMatcher exclusionMatcher) [0x00000] in <filename unknown>:0 
+  at Hpdi.Vss2Git.RevisionAnalyzer+<AddItem>c__AnonStoreyB+<AddItem>c__AnonStoreyC.<>m__9 (Hpdi.VssLogicalLib.VssProject subproject) [0x00000] in <filename unknown>:0 
+  at Hpdi.Vss2Git.VssUtil.RecurseItems (Hpdi.VssLogicalLib.VssProject project, Hpdi.Vss2Git.VssProjectCallback projectCallback, Hpdi.Vss2Git.VssFileCallback fileCallback) [0x00000] in <filename unknown>:0 
+  at Hpdi.Vss2Git.RevisionAnalyzer+<AddItem>c__AnonStoreyB.<>m__8 (System.Object work) [0x00000] in <filename unknown>:0 
+  at Hpdi.Vss2Git.SimpleWorkQueue.Worker (System.Object state) [0x00000] in <filename unknown>:0 
