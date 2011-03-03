@@ -540,8 +540,12 @@ namespace Hpdi.Vss2Git
                 if (parentInfo != null)
                 {
                     // propagate the destroyed flag from the new parent
-                    subprojectInfo.Parent = parentInfo;
                     subprojectInfo.Destroyed |= parentInfo.Destroyed;
+                    if (subprojectInfo.Destroyed)
+                    {
+                        // otherwise the parent will be updated in MoveProjectFrom
+                        subprojectInfo.Parent = parentInfo;
+                    }
                 }
                 else
                 {
