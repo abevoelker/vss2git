@@ -14,6 +14,8 @@
  */
 
 using Hpdi.VssLogicalLib;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Hpdi.Vss2Git
 {
@@ -52,12 +54,36 @@ namespace Hpdi.Vss2Git
                     return status;
                 }
             }
+
+            HashSet<string> locallyProcessedFiles = new HashSet<string>();
             foreach (VssFile file in project.Files)
             {
                 RecursionStatus status = fileCallback(project, file);
+                locallyProcessedFiles.Add(file.PhysicalName);
                 if (status == RecursionStatus.Abort)
                 {
                     return status;
+                }
+            }
+            foreach (VssRevision revision in project.Revisions)
+            {
+                var namedAction = revision.Action as VssNamedAction;
+                if (namedAction != null && !namedAction.Name.IsProject)
+                {
+                    string physicalName = namedAction.Name.PhysicalName;
+                    if (!locallyProcessedFiles.Contains(physicalName))
+                    {
+                        VssFile file = project.GetHistoricalFile(physicalName, namedAction.Name.LogicalName);
+                        locallyProcessedFiles.Add(file.PhysicalName);
+                        if (File.Exists(file.PhysicalPath) && File.Exists(file.DataPath))
+                        {
+                            RecursionStatus status = fileCallback(project, file);
+                            if (status == RecursionStatus.Abort)
+                            {
+                                return status;
+                            }
+                        }
+                    }
                 }
             }
             return RecursionStatus.Continue;

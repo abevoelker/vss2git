@@ -48,6 +48,11 @@ namespace Hpdi.VssLogicalLib
             get { return new VssRevisions<VssProject, VssProjectRevision>(this); }
         }
 
+        public VssFile GetHistoricalFile(string physicalName, string logicalName)
+        {
+            return database.OpenFile(physicalName, logicalName);
+        }
+
         public new VssProjectRevision GetRevision(int version)
         {
             return (VssProjectRevision)base.GetRevision(version);
