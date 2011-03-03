@@ -147,7 +147,10 @@ namespace Hpdi.Vss2Git
 
         public void Move(string sourcePath, string destPath)
         {
-            GitExec("mv -- " + Quote(sourcePath) + " " + Quote(destPath));
+            if (!GitExecUnless("mv -- " + Quote(sourcePath) + " " + Quote(destPath), "source directory is empty"))
+            {
+                Directory.Move(sourcePath, destPath);
+            }
         }
 
         class TempFile : IDisposable
@@ -268,6 +271,12 @@ namespace Hpdi.Vss2Git
         {
             var startInfo = GetStartInfo(args);
             ExecuteUnless(startInfo, null);
+        }
+
+        private bool GitExecUnless(string args, string unless)
+        {
+            var startInfo = GetStartInfo(args);
+            return ExecuteUnless(startInfo, unless);
         }
 
         private ProcessStartInfo GetStartInfo(string args)
