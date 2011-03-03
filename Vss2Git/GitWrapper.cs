@@ -340,8 +340,6 @@ namespace Hpdi.Vss2Git
                     var stdoutBuffer = new StringBuilder();
                     var stderrBuffer = new StringBuilder();
 
-                    bool nothingRead = true;
-
                     while (true)
                     {
                         activityEvent.Reset();
@@ -378,19 +376,11 @@ namespace Hpdi.Vss2Git
                                 }
                             }
                             logger.WriteLine(line);
-                            nothingRead = false;
                         }
 
                         if (process.HasExited)
                         {
-                            if ((process.ExitCode) != 0 && nothingRead)
-                            {
-                                nothingRead = false;
-                            }
-                            else
-                            {
-                                break;
-                            }
+                            break;
                         }
 
                         activityEvent.WaitOne(1000);
