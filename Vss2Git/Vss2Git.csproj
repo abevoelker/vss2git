@@ -40,7 +40,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncLineReader.cs" />
     <Compile Include="CollectionUtil.cs" />
     <Compile Include="ChangesetBuilder.cs" />
     <Compile Include="ProcessException.cs" />

@@ -319,6 +319,47 @@ namespace Hpdi.Vss2Git
                 exec, args, stdout, stderr);
         }
 
+        private string memoryStreamToString(MemoryStream strm)
+        {
+            long oldPos = strm.Position;
+            strm.Position = 0;
+            StreamReader reader = new StreamReader(strm);
+
+            string tmp = reader.ReadToEnd();
+            strm.Position = oldPos;
+            return tmp;
+        }
+
+        private string parseOutput(StreamReader output, char mark)
+        {
+            MemoryStream strm = new MemoryStream();
+            StreamWriter writer = new StreamWriter(strm);
+            writer.AutoFlush = true;
+
+            char[] chars = new char[1];
+
+            writer.Write(mark);
+            while (!output.EndOfStream)
+            {
+                output.Read(chars, 0, 1);
+                if (chars[0] != '\0')
+                {
+                    if (chars[0] == '\n')
+                    {
+                        writer.Write("\r\n");
+                        writer.Write(mark);
+                    }
+                    else
+                    {
+                        writer.Write(chars[0]);
+                    }
+                }
+            }
+
+            return memoryStreamToString(strm).TrimEnd(mark);
+        }
+
+
         private int Execute(ProcessStartInfo startInfo, out string stdout, out string stderr)
         {
             logger.WriteLine("Executing: {0} {1}", startInfo.FileName, startInfo.Arguments);
@@ -328,66 +369,34 @@ namespace Hpdi.Vss2Git
                 using (var process = Process.Start(startInfo))
                 {
                     process.StandardInput.Close();
-                    var stdoutReader = new AsyncLineReader(process.StandardOutput.BaseStream);
-                    var stderrReader = new AsyncLineReader(process.StandardError.BaseStream);
 
-                    var activityEvent = new ManualResetEvent(false);
-                    EventHandler activityHandler = delegate { activityEvent.Set(); };
-                    process.Exited += activityHandler;
-                    stdoutReader.DataReceived += activityHandler;
-                    stderrReader.DataReceived += activityHandler;
-
-                    var stdoutBuffer = new StringBuilder();
-                    var stderrBuffer = new StringBuilder();
-
-                    while (true)
+                    String tmpOut = "";
+                    Thread outReader = new Thread(new ThreadStart(() =>
                     {
-                        activityEvent.Reset();
+                        Thread.CurrentThread.IsBackground = true;
+                        tmpOut = parseOutput(process.StandardOutput, '>');
+                    }));
 
-                        while (true)
-                        {
-                            string line = stdoutReader.ReadLine();
-                            if (line != null)
-                            {
-                                line = line.TrimEnd();
-                                if (stdoutBuffer.Length > 0)
-                                {
-                                    stdoutBuffer.AppendLine();
-                                }
-                                stdoutBuffer.Append(line);
-                                logger.Write('>');
-                            }
-                            else
-                            {
-                                line = stderrReader.ReadLine();
-                                if (line != null)
-                                {
-                                    line = line.TrimEnd();
-                                    if (stderrBuffer.Length > 0)
-                                    {
-                                        stderrBuffer.AppendLine();
-                                    }
-                                    stderrBuffer.Append(line);
-                                    logger.Write('!');
-                                }
-                                else
-                                {
-                                    break;
-                                }
-                            }
-                            logger.WriteLine(line);
-                        }
+                    String tmpErr = "";
+                    Thread errReader = new Thread(new ThreadStart(() =>
+                    {
+                        Thread.CurrentThread.IsBackground = true;
+                        tmpErr = parseOutput(process.StandardError, '!');
+                    }));
 
-                        if (process.HasExited)
-                        {
-                            break;
-                        }
+                    outReader.Start();
+                    errReader.Start();
 
-                        activityEvent.WaitOne(1000);
-                    }
+                    outReader.Join();
+                    errReader.Join();
+                    process.WaitForExit();
 
-                    stdout = stdoutBuffer.ToString();
-                    stderr = stderrBuffer.ToString();
+                    stdout = tmpOut;
+                    stderr = tmpErr;
+
+                    logger.Write(stdout);
+                    logger.Write(stderr);
+
                     return process.ExitCode;
                 }
             }
