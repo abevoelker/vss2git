@@ -161,16 +161,16 @@ namespace Hpdi.Vss2Git
             items.Remove(item);
         }
 
-        public bool ContainsLogicalName(string logicalName)
+        public string TryToGetPhysicalName(string logicalName)
         {
             foreach (var item in items)
             {
                 if (item.LogicalName.Equals(logicalName))
                 {
-                    return true;
+                    return item.PhysicalName;
                 }
             }
-            return false;
+            return null;
         }
 
         public bool ContainsFiles()
@@ -556,10 +556,10 @@ namespace Hpdi.Vss2Git
             return subprojectInfo;
         }
 
-        public bool ProjectContainsLogicalName(VssItemName project, VssItemName name)
+        public string TryToGetPhysicalNameContainedInProject(VssItemName project, VssItemName name)
         {
             var parentInfo = GetOrCreateProject(project);
-            return parentInfo.ContainsLogicalName(name.LogicalName);
+            return parentInfo.TryToGetPhysicalName(name.LogicalName);
         }
 
         private VssProjectInfo GetOrCreateProject(VssItemName name)
@@ -590,7 +590,7 @@ namespace Hpdi.Vss2Git
             {
                 throw new ArgumentException("Project spec must start with $/", "projectSpec");
             }
-            
+
             foreach (var rootInfo in rootInfos.Values)
             {
                 if (projectSpec.StartsWith(rootInfo.OriginalVssPath))
