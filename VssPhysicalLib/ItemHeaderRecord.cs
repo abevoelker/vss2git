@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.IO;
 
 namespace Hpdi.VssPhysicalLib
@@ -71,6 +72,10 @@ namespace Hpdi.VssPhysicalLib
             name = reader.ReadName();
             firstRevision = reader.ReadInt16();
             dataExt = reader.ReadString(2);
+            if (Type.GetType("Mono.Runtime") != null)
+            {
+                dataExt = dataExt.ToLower();
+            }
             firstRevOffset = reader.ReadInt32();
             lastRevOffset = reader.ReadInt32();
             eofOffset = reader.ReadInt32();

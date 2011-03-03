@@ -89,6 +89,13 @@ namespace Hpdi.Vss2Git
                 shellQuoting = true;
                 return true;
             }
+            if (FindInPathVar("git", out foundPath))
+            {   // we are on linux
+                gitExecutable = "git";
+                gitInitialArguments = null;
+                shellQuoting = true;
+                return true;
+            }
             return false;
         }
 
@@ -323,6 +330,9 @@ namespace Hpdi.Vss2Git
 
                     var stdoutBuffer = new StringBuilder();
                     var stderrBuffer = new StringBuilder();
+
+                    bool nothingRead = true;
+
                     while (true)
                     {
                         activityEvent.Reset();
@@ -359,11 +369,19 @@ namespace Hpdi.Vss2Git
                                 }
                             }
                             logger.WriteLine(line);
+                            nothingRead = false;
                         }
 
                         if (process.HasExited)
                         {
-                            break;
+                            if ((process.ExitCode) != 0 && nothingRead)
+                            {
+                                nothingRead = false;
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
 
                         activityEvent.WaitOne(1000);
@@ -474,7 +492,7 @@ namespace Hpdi.Vss2Git
         private bool NeedsQuoting(char c)
         {
             return char.IsWhiteSpace(c) || c == QuoteChar ||
-                (shellQuoting && (c == '&' || c == '|' || c == '<' || c == '>' || c == '^' || c == '%'));
+                (shellQuoting && (c == '&' || c == '|' || c == '<' || c == '>' || c == '^' || c == '%' || c == '#'));
         }
     }
 }

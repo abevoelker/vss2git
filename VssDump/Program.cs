@@ -135,6 +135,10 @@ namespace Hpdi.VssDump
                 foreach (string dataPath in dataPaths)
                 {
                     var dataFile = Path.GetFileName(dataPath).ToUpper();
+                    if (Type.GetType("Mono.Runtime") != null)
+                    {
+                        dataFile = dataFile.ToLower();
+                    }
                     var orphaned = !tree.PhysicalNames.Contains(dataFile);
                     Console.WriteLine(Separator);
                     Console.WriteLine("{0}{1}", dataPath, orphaned ? " (orphaned)" : "");

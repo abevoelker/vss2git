@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Hpdi.VssLogicalLib
 {
     /// <summary>
@@ -54,6 +56,10 @@ namespace Hpdi.VssLogicalLib
         {
             this.logicalName = logicalName;
             this.physicalName = physicalName;
+            if (Type.GetType("Mono.Runtime") != null)
+            {
+                this.physicalName = this.physicalName.ToLower();
+            }
             this.isProject = isProject;
         }
 

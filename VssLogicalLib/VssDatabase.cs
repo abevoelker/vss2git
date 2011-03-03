@@ -27,9 +27,10 @@ namespace Hpdi.VssLogicalLib
     public class VssDatabase
     {
         public const string RootProjectName = "$";
-        public const string RootProjectFile = "AAAAAAAA";
         public const char ProjectSeparatorChar = '/';
         public const string ProjectSeparator = "/";
+
+        public string RootProjectFile = "AAAAAAAA";
 
         private readonly string basePath;
         private readonly string iniPath;
@@ -102,6 +103,10 @@ namespace Hpdi.VssLogicalLib
         public VssItem GetItemPhysical(string physicalName)
         {
             physicalName = physicalName.ToUpper();
+            if (Type.GetType("Mono.Runtime") != null)
+            {
+                physicalName = physicalName.ToLower();
+            }
 
             if (physicalName == RootProjectFile)
             {
@@ -137,6 +142,11 @@ namespace Hpdi.VssLogicalLib
 
         internal VssDatabase(string path, Encoding encoding)
         {
+            if (Type.GetType("Mono.Runtime") != null)
+            {
+                RootProjectFile = RootProjectFile.ToLower();
+            }
+
             this.basePath = path;
             this.encoding = encoding;
 

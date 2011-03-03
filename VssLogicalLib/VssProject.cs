@@ -203,6 +203,10 @@ namespace Hpdi.VssLogicalLib
                     if (entryItem == null)
                     {
                         var physicalName = entryRecord.Physical.ToUpper();
+                        if (Type.GetType("Mono.Runtime") != null)
+                        {
+                            physicalName = physicalName.ToLower();
+                        }  
                         var logicalName = project.database.GetFullName(entryRecord.Name);
                         if (entryRecord.ItemType == ItemType.Project)
                         {
