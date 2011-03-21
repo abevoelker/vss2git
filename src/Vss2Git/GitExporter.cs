@@ -162,7 +162,7 @@ namespace Hpdi.Vss2Git
                     if (needCommit)
                     {
                         LogStatus(work, "Committing " + changesetDesc);
-                        if (CommitChangeset(git, changeset))
+                        if (CommitChangeset(changeset))
                         {
                             ++commitCount;
                         }
@@ -573,14 +573,15 @@ namespace Hpdi.Vss2Git
             return needCommit;
         }
 
-        private bool CommitChangeset(GitWrapper git, Changeset changeset)
+        private bool CommitChangeset(Changeset changeset)
         {
+
             var result = false;
             AbortRetryIgnore(delegate
             {
-                result = git.AddAll() &&
-                    git.Commit(changeset.User, GetEmail(changeset.User),
-                    changeset.Comment ?? DefaultComment, changeset.DateTime);
+				result = exporter.Commit(changeset.User, GetEmail(changeset.User), changeset.DateTime,
+				                         changeset.User, GetEmail(changeset.User), changeset.DateTime,
+				                         changeset.Comment ?? DefaultComment);
             });
             return result;
         }
