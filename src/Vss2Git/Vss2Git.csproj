@@ -100,6 +100,10 @@
       <Project>{16812A7C-32C1-457E-8E2B-5F7DCC6C38F8}</Project>
       <Name>VssPhysicalLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GitFastImport\GitFastImport.csproj">
+      <Project>{B0ACF559-3C76-4847-97ED-8CD2E437C2A8}</Project>
+      <Name>GitFastImport</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Vss2Git.ico" />

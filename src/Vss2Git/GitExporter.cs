@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using Hpdi.VssLogicalLib;
+using Hpdi.GitFastImport;
 
 namespace Hpdi.Vss2Git
 {
@@ -37,6 +38,7 @@ namespace Hpdi.Vss2Git
         private readonly VssDatabase database;
         private readonly RevisionAnalyzer revisionAnalyzer;
         private readonly ChangesetBuilder changesetBuilder;
+		private Exporter exporter;
         private readonly StreamCopier streamCopier = new StreamCopier();
         private readonly HashSet<string> tagsUsed = new HashSet<string>();
 
@@ -72,6 +74,7 @@ namespace Hpdi.Vss2Git
 
         public void ExportToGit(string repoPath)
         {
+			exporter = new Exporter();
             workQueue.AddLast(delegate(object work)
             {
                 var stopwatch = Stopwatch.StartNew();
@@ -330,6 +333,7 @@ namespace Hpdi.Vss2Git
                                             writeProjectPhysicalName = successor; // rewrite this project because it gets deleted below
                                         }
                                         
+								        /*
                                         if (((VssProjectInfo)itemInfo).ContainsFiles())
                                         {
                                             git.Remove(targetPath, true);
@@ -340,6 +344,7 @@ namespace Hpdi.Vss2Git
                                             // git doesn't care about directories with no files
                                             Directory.Delete(targetPath, true);
                                         }
+                                        */
                                     }
                                 }
                                 else
@@ -530,7 +535,7 @@ namespace Hpdi.Vss2Git
                         foreach (var fileInfo in pathMapper.GetAllFiles(writeProjectPhysicalName))
                         {
                             if (WriteRevision(pathMapper, actionType, fileInfo.PhysicalName,
-                                fileInfo.Version, writeProjectPhysicalName, git))
+                                fileInfo.Version, writeProjectPhysicalName))
                             {
                                 // one or more files were written
                                 needCommit = true;
@@ -541,10 +546,8 @@ namespace Hpdi.Vss2Git
                     {
                         // write current rev to working path
                         int version = pathMapper.GetFileVersion(target.PhysicalName);
-                        if (WriteRevisionTo(target.PhysicalName, version, targetPath))
+                        if (WriteRevision(pathMapper, actionType, target.PhysicalName, version, targetPath))
                         {
-                            // add file explicitly, so it is visible to subsequent git operations
-                            git.Add(targetPath);
                             needCommit = true;
                         }
                     }
@@ -564,7 +567,7 @@ namespace Hpdi.Vss2Git
 
                 // write current rev to all sharing projects
                 WriteRevision(pathMapper, actionType, target.PhysicalName,
-                    revision.Version, null, git);
+                    revision.Version, null);
                 needCommit = true;
             }
             return needCommit;
@@ -652,65 +655,37 @@ namespace Hpdi.Vss2Git
         }
 
         private bool WriteRevision(VssPathMapper pathMapper, VssActionType actionType,
-            string physicalName, int version, string underProject, GitWrapper git)
+            string physicalName, int version, string underProject)
         {
             var needCommit = false;
             var paths = pathMapper.GetFilePaths(physicalName, underProject);
             foreach (string path in paths)
             {
                 logger.WriteLine("{0}: {1} revision {2}", path, actionType, version);
-                if (WriteRevisionTo(physicalName, version, path))
-                {
-                    // add file explicitly, so it is visible to subsequent git operations
-                    git.Add(path);
-                    needCommit = true;
-                }
+				
+				/* Moved logic in from WriteRevisionTo */
+				VssFile item;
+	            VssFileRevision revision;
+	            Stream contents;
+	            try
+	            {
+	                item = (VssFile)database.GetItemPhysical(physicalName);
+	                revision = item.GetRevision(version);
+	                contents = revision.GetContents();
+					
+					exporter.PushBlob(revision, contents);
+					needCommit = true;
+	            }
+	            catch (Exception e)
+	            {
+	                // log an error for missing data files or versions, but keep processing
+	                var message = ExceptionFormatter.Format(e);
+	                logger.WriteLine("ERROR: {0}", message);
+	                logger.WriteLine(e);
+	                return false;
+	            }
             }
             return needCommit;
-        }
-
-        private bool WriteRevisionTo(string physical, int version, string destPath)
-        {
-            VssFile item;
-            VssFileRevision revision;
-            Stream contents;
-            try
-            {
-                item = (VssFile)database.GetItemPhysical(physical);
-                revision = item.GetRevision(version);
-                contents = revision.GetContents();
-            }
-            catch (Exception e)
-            {
-                // log an error for missing data files or versions, but keep processing
-                var message = ExceptionFormatter.Format(e);
-                logger.WriteLine("ERROR: {0}", message);
-                logger.WriteLine(e);
-                return false;
-            }
-
-            // propagate exceptions here (e.g. disk full) to abort/retry/ignore
-            using (contents)
-            {
-                WriteStream(contents, destPath);
-            }
-
-            // try to use the first revision (for this branch) as the create time,
-            // since the item creation time doesn't seem to be meaningful
-            var createDateTime = item.Created;
-            using (var revEnum = item.Revisions.GetEnumerator())
-            {
-                if (revEnum.MoveNext())
-                {
-                    createDateTime = revEnum.Current.DateTime;
-                }
-            }
-
-            // set file creation and update timestamps
-            File.SetCreationTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(createDateTime));
-            File.SetLastWriteTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(revision.DateTime));
-
-            return true;
         }
 
         private void WriteStream(Stream inputStream, string path)

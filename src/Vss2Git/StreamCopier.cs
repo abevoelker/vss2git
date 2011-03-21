@@ -63,5 +63,6 @@ namespace Hpdi.Vss2Git
             }
             return copied;
         }
+		
     }
 }
