@@ -37,9 +37,9 @@ namespace Hpdi.VssDump
 
             var invalidArg = false;
             var argIndex = 0;
-            while (argIndex < args.Length && args[argIndex].StartsWith("/"))
+            while (argIndex < args.Length && args[argIndex].StartsWith("--"))
             {
-                var option = args[argIndex].Substring(1).Split(':');
+                var option = args[argIndex].Substring(2).Split(':');
                 switch (option[0])
                 {
                     case "encoding":
@@ -112,8 +112,8 @@ namespace Hpdi.VssDump
             {
                 Console.WriteLine("Syntax: VssDump [options] <vss-base-path>");
                 Console.WriteLine("Options:");
-                Console.WriteLine("  /encoding:<encoding>    Output encoding IANA name or code page");
-                Console.WriteLine("  /encodings              List supported encodings and terminate");
+                Console.WriteLine("  --encoding:<encoding>    Output encoding IANA name or code page");
+                Console.WriteLine("  --encodings              List supported encodings and terminate");
                 return;
             }
 
