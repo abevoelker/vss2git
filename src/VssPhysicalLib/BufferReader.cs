@@ -120,6 +120,16 @@ namespace Hpdi.VssPhysicalLib
             CheckRead(2 + 34 + 4);
             return new VssName(ReadInt16(), ReadString(34), ReadInt32());
         }
+        
+        // This hack is here for now because the reader.limit is too small
+        // for it to be pulled during FileHeaderRecord.Read(), due to the
+        // length of the header being inadequately small (this length being
+        // calculated in RecordHeader.Read() from a value in the file)
+        // TODO: De-couple this from BufferReader. Try to move this logic into
+        //       one of the Header classes?
+        public string GetFileParent() {
+            return encoding.GetString(data, 1104, 8);
+        }
 
         public string ReadString(int fieldSize)
         {

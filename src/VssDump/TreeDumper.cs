@@ -62,7 +62,7 @@ namespace Hpdi.VssDump
             {
                 physicalNames.Add(file.PhysicalName);
                 writer.WriteLine("{0}  {1} ({2}) - {3}",
-                    indentStr, file.Name, file.PhysicalName, file.GetPath(project));
+                    indentStr, file.Name, file.PhysicalName, file.GetPath());
 
                 if (IncludeRevisions)
                 {

@@ -70,6 +70,16 @@ namespace Hpdi.VssLogicalLib
         {
             get { return Header.CreationDateTime; }
         }
+        
+        public string ParentProjectPhysical
+        {
+            get { return Header.ParentPhysicalName; }
+        }
+                
+        public VssProject ParentProject
+        {
+            get; private set;
+        }
 
         public new IEnumerable<VssFileRevision> Revisions
         {
@@ -89,11 +99,12 @@ namespace Hpdi.VssLogicalLib
         internal VssFile(VssDatabase database, VssItemName itemName, string physicalPath)
             : base(database, itemName, physicalPath)
         {
+            this.ParentProject = (VssProject)database.GetItemPhysical(ParentProjectPhysical);
         }
 
-        public string GetPath(VssProject project)
+        public string GetPath()
         {
-            return project.Path + VssDatabase.ProjectSeparator + Name;
+            return ParentProject.Path + VssDatabase.ProjectSeparator + Name;
         }
 
         protected override VssRevision CreateRevision(RevisionRecord revision, CommentRecord comment)

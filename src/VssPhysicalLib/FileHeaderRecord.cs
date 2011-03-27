@@ -51,6 +51,7 @@ namespace Hpdi.VssPhysicalLib
         DateTime lastRevDateTime;
         DateTime modificationDateTime;
         DateTime creationDateTime;
+        string parentPhysicalName;
 
         public FileFlags Flags { get { return flags; } }
         public string BranchFile { get { return branchFile; } }
@@ -64,6 +65,7 @@ namespace Hpdi.VssPhysicalLib
         public DateTime LastRevDateTime { get { return lastRevDateTime; } }
         public DateTime ModificationDateTime { get { return modificationDateTime; } }
         public DateTime CreationDateTime { get { return creationDateTime; } }
+        public string ParentPhysicalName { get { return parentPhysicalName; } }
 
         public FileHeaderRecord()
             : base(ItemType.File)
@@ -88,6 +90,7 @@ namespace Hpdi.VssPhysicalLib
             lastRevDateTime = reader.ReadDateTime();
             modificationDateTime = reader.ReadDateTime();
             creationDateTime = reader.ReadDateTime();
+            parentPhysicalName = reader.GetFileParent();
             // remaining appears to be trash
         }
 

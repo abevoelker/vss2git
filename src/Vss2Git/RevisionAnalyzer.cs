@@ -154,7 +154,7 @@ namespace Hpdi.Vss2Git
                             return RecursionStatus.Abort;
                         }
 
-                        var path = file.GetPath(subproject);
+                        var path = file.GetPath();
                         if (exclusionMatcher != null && exclusionMatcher.Matches(path))
                         {
                             logger.WriteLine("Excluding file {0}", path);
