@@ -1,0 +1,4 @@
+*.userprefs
+*.csproj
+*.pidb
+*/bin
