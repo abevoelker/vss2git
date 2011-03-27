@@ -74,7 +74,7 @@ namespace Hpdi.Vss2Git
 
         public void ExportToGit(string repoPath)
         {
-			exporter = new Exporter();
+			exporter = new Exporter(database);
             workQueue.AddLast(delegate(object work)
             {
                 var stopwatch = Stopwatch.StartNew();

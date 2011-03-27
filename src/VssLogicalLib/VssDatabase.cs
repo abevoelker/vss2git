@@ -38,6 +38,7 @@ namespace Hpdi.VssLogicalLib
         private readonly NameFile nameFile;
         private readonly VssProject rootProject;
         private readonly Encoding encoding;
+        private readonly TimeZone timeZone;
 
         public string BasePath
         {
@@ -62,6 +63,11 @@ namespace Hpdi.VssLogicalLib
         public Encoding Encoding
         {
             get { return encoding; }
+        }
+        
+        public TimeZone TimeZone
+        {
+            get { return timeZone; }
         }
 
         public VssItem GetItem(string logicalPath)
@@ -140,7 +146,7 @@ namespace Hpdi.VssLogicalLib
             return File.Exists(physicalPath);
         }
 
-        internal VssDatabase(string path, Encoding encoding)
+        internal VssDatabase(string path, Encoding encoding, TimeZone tz)
         {
             if (Type.GetType("Mono.Runtime") != null)
             {
@@ -149,6 +155,7 @@ namespace Hpdi.VssLogicalLib
 
             this.basePath = path;
             this.encoding = encoding;
+            this.timeZone = tz;
 
             iniPath = Path.Combine(path, "srcsafe.ini");
             var iniReader = new SimpleIniReader(iniPath);
@@ -160,6 +167,11 @@ namespace Hpdi.VssLogicalLib
             nameFile = new NameFile(namesPath, encoding);
 
             rootProject = OpenProject(null, RootProjectFile, RootProjectName);
+        }
+        
+        internal VssDatabase(string path, Encoding encoding)
+            :this(path, encoding, TimeZone.CurrentTimeZone)
+        {
         }
 
         internal VssProject OpenProject(VssProject parent, string physicalName, string logicalName)

@@ -11,9 +11,11 @@ namespace Hpdi.GitFastImport
 		private List<int> commitMarks = new List<int>();
 		private List<SimpleRevision> blobMarks = new List<SimpleRevision>();
 		private int markCount = 0;
+        private VssDatabase database;
 		
-		public Exporter ()
+		public Exporter(VssDatabase database)
 		{
+            this.database = database;
 		}
 		
 		public void PushBlob(VssFileRevision vfr, Stream blobRawData){
@@ -40,9 +42,12 @@ namespace Hpdi.GitFastImport
 			System.Console.Write("commit refs/heads/master\n");
 			System.Console.Write("mark :{0}\n", ++markCount);
 			System.Console.Write("author {0} <{1}> {2} {3}\n", authorName, authorEmail,
-			                     TimeStamp.GetTimeSinceUnixEpoch((authorTime)), "-0600");
+			                     TimeStamp.GetTimeSinceUnixEpoch(authorTime),
+                                 TimeStamp.FormatTimeZone(database.TimeZone.GetUtcOffset(authorTime)));
+            
 			System.Console.Write("committer {0} <{1}> {2} {3}\n", committerName, committerEmail,
-			                     TimeStamp.GetTimeSinceUnixEpoch(committerTime), "-0600");
+			                     TimeStamp.GetTimeSinceUnixEpoch(committerTime),
+                                 TimeStamp.FormatTimeZone(database.TimeZone.GetUtcOffset(committerTime)));
 			System.Console.Write("data {0}\n", commitMessage.Length + 1);
 			System.Console.Write(commitMessage + "\n");
 			//Set the commit ancestor to the last commit
