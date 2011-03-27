@@ -36,12 +36,19 @@ namespace Hpdi.VssDump
             Console.OutputEncoding = Encoding.Default;
 
             var invalidArg = false;
+            var listRevisions = false;
             var argIndex = 0;
-            while (argIndex < args.Length && args[argIndex].StartsWith("/"))
+            while (!invalidArg && argIndex < args.Length && args[argIndex].StartsWith("--"))
             {
-                var option = args[argIndex].Substring(1).Split(':');
+                var option = args[argIndex].Substring(2).Split(':');
                 switch (option[0])
                 {
+                    case "revisions":
+                        {
+                            listRevisions = true;
+                            break;
+                        }
+
                     case "encoding":
                         {
                             string encodingName;
@@ -103,6 +110,12 @@ namespace Hpdi.VssDump
                             }
                             return;
                         }
+
+                    default:
+                        {
+                            invalidArg = true;
+                            break;
+                        }
                 }
                 ++argIndex;
             }
@@ -112,8 +125,9 @@ namespace Hpdi.VssDump
             {
                 Console.WriteLine("Syntax: VssDump [options] <vss-base-path>");
                 Console.WriteLine("Options:");
-                Console.WriteLine("  /encoding:<encoding>    Output encoding IANA name or code page");
-                Console.WriteLine("  /encodings              List supported encodings and terminate");
+                Console.WriteLine("  --encoding:<encoding>    Output encoding IANA name or code page");
+                Console.WriteLine("  --encodings              List supported encodings and terminate");
+                Console.WriteLine("  --revisions              Include file revision information");
                 return;
             }
 
@@ -124,6 +138,7 @@ namespace Hpdi.VssDump
             Console.WriteLine("File hierarchy:");
             Console.WriteLine(Separator);
             var tree = new TreeDumper(Console.Out) { IncludeRevisions = false };
+            tree.IncludeRevisions = listRevisions;
             tree.DumpProject(db.RootProject);
             Console.WriteLine();
 
